@@ -136,3 +136,5 @@ dist
 .env*.local
 
 .idea
+.npmrc
+.npmrc
