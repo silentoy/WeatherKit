@@ -126,6 +126,9 @@ export async function Response($request, $response) {
                                         }
                                     }),
                                 );
+                                if (typeof $persistentStore !== "undefined") {
+                                    $persistentStore.write(JSON.stringify(body), "iRingo.Debug.Decoded");
+                                }
                                 const WeatherData = WeatherKit2.encode(Builder, "all", body);
                                 Builder.finish(WeatherData);
                                 break;
