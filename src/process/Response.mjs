@@ -96,31 +96,22 @@ export async function Response($request, $response) {
                                 await Promise.all(
                                     parameters.dataSets.map(async dataSet => {
                                         switch (dataSet) {
-                                            case "airQuality": {
-                                                body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
-                                                MarkInjectedProvider(body.airQuality, Settings);
+                                            case "airQuality":
+                                                // body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
                                                 break;
-                                            }
-                                            case "currentWeather": {
-                                                body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
-                                                if (body?.currentWeather?.metadata?.providerName && !body?.currentWeather?.metadata?.providerLogo) body.currentWeather.metadata.providerLogo = providerNameToLogo(body?.currentWeather?.metadata?.providerName, "v2");
+                                            case "currentWeather":
+                                                // body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
                                                 break;
-                                            }
-                                            case "forecastDaily": {
-                                                body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
-                                                if (body?.forecastDaily?.metadata?.providerName && !body?.forecastDaily?.metadata?.providerLogo) body.forecastDaily.metadata.providerLogo = providerNameToLogo(body?.forecastDaily?.metadata?.providerName, "v2");
+                                            case "forecastDaily":
+                                                // body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
                                                 break;
-                                            }
-                                            case "forecastHourly": {
-                                                body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
-                                                if (body?.forecastHourly?.metadata?.providerName && !body?.forecastHourly?.metadata?.providerLogo) body.forecastHourly.metadata.providerLogo = providerNameToLogo(body?.forecastHourly?.metadata?.providerName, "v2");
+                                            case "forecastHourly":
+                                                // body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
                                                 break;
-                                            }
-                                            case "forecastNextHour": {
-                                                body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
-                                                if (body?.forecastNextHour?.metadata?.providerName && !body?.forecastNextHour?.metadata?.providerLogo) body.forecastNextHour.metadata.providerLogo = providerNameToLogo(body?.forecastNextHour?.metadata?.providerName, "v2");
+                                            case "forecastNextHour":
+                                                // body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
+                                                // if (body?.forecastNextHour?.metadata?.providerName && !body?.forecastNextHour?.metadata?.providerLogo) body.forecastNextHour.metadata.providerLogo = providerNameToLogo(body?.forecastNextHour?.metadata?.providerName, "v2");
                                                 break;
-                                            }
                                             default:
                                                 break;
                                         }
