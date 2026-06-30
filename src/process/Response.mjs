@@ -269,7 +269,42 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
 async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     Console.info("☑️ InjectForecastDaily");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastDaily (MOCK MODE - PASSTHROUGH)");
+        Console.info("☑️ InjectForecastDaily (MOCK MODE)");
+        if (forecastDaily && Array.isArray(forecastDaily.days)) {
+            forecastDaily.days = forecastDaily.days.map(day => {
+                const newDay = {
+                    ...day,
+                    temperatureMax: 45.0,
+                    temperatureMin: 45.0,
+                    conditionCode: "RAIN"
+                };
+                if (newDay.daytimeForecast) {
+                    newDay.daytimeForecast = {
+                        ...newDay.daytimeForecast,
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
+                    };
+                }
+                if (newDay.overnightForecast) {
+                    newDay.overnightForecast = {
+                        ...newDay.overnightForecast,
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
+                    };
+                }
+                if (newDay.restOfDayForecast) {
+                    newDay.restOfDayForecast = {
+                        ...newDay.restOfDayForecast,
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
+                    };
+                }
+                return newDay;
+            });
+        }
         return forecastDaily;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
@@ -312,7 +347,14 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
 async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     Console.info("☑️ InjectForecastHourly");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastHourly (MOCK MODE - PASSTHROUGH)");
+        Console.info("☑️ InjectForecastHourly (MOCK MODE)");
+        if (forecastHourly && Array.isArray(forecastHourly.hours)) {
+            forecastHourly.hours = forecastHourly.hours.map(hour => ({
+                ...hour,
+                temperature: 45.0,
+                conditionCode: "RAIN"
+            }));
+        }
         return forecastHourly;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
