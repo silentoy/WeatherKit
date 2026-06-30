@@ -212,9 +212,9 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
                 ...currentWeather?.metadata,
                 providerName: "iRingo Mock Current Weather",
             },
-            temperature: 99.0,
-            temperatureApparent: 99.0,
-            conditionCode: "SNOW"
+            temperature: 45.0,
+            temperatureApparent: 45.0,
+            conditionCode: "RAIN"
         };
         MarkInjectedProvider(currentWeather, Settings);
         Console.info("✅ InjectCurrentWeather (MOCK MODE)");
@@ -263,32 +263,32 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
             forecastDaily.days = forecastDaily.days.map(day => {
                 const newDay = {
                     ...day,
-                    temperatureMax: 99.0,
-                    temperatureMin: 99.0,
-                    conditionCode: "SNOW"
+                    temperatureMax: 45.0,
+                    temperatureMin: 45.0,
+                    conditionCode: "RAIN"
                 };
                 if (newDay.daytimeForecast) {
                     newDay.daytimeForecast = {
                         ...newDay.daytimeForecast,
-                        temperatureMax: 99.0,
-                        temperatureMin: 99.0,
-                        conditionCode: "SNOW"
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
                     };
                 }
                 if (newDay.overnightForecast) {
                     newDay.overnightForecast = {
                         ...newDay.overnightForecast,
-                        temperatureMax: 99.0,
-                        temperatureMin: 99.0,
-                        conditionCode: "SNOW"
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
                     };
                 }
                 if (newDay.restOfDayForecast) {
                     newDay.restOfDayForecast = {
                         ...newDay.restOfDayForecast,
-                        temperatureMax: 99.0,
-                        temperatureMin: 99.0,
-                        conditionCode: "SNOW"
+                        temperatureMax: 45.0,
+                        temperatureMin: 45.0,
+                        conditionCode: "RAIN"
                     };
                 }
                 return newDay;
@@ -340,8 +340,8 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
         if (forecastHourly && Array.isArray(forecastHourly.hours)) {
             forecastHourly.hours = forecastHourly.hours.map(hour => ({
                 ...hour,
-                temperature: 99.0,
-                conditionCode: "SNOW"
+                temperature: 45.0,
+                conditionCode: "RAIN"
             }));
         }
         return forecastHourly;
@@ -435,8 +435,8 @@ async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
                 ...airQuality?.metadata,
                 providerName: "iRingo Mock Air Quality",
             },
-            index: 999,
-            categoryIndex: 6,
+            index: 185,
+            categoryIndex: 4,
             isSignificant: true,
             scale: "HJ6332012",
         };
