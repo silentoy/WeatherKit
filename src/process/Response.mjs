@@ -150,6 +150,18 @@ export async function Response($request, $response) {
             }
             // 写入二进制数据
             $response.body = rawBody;
+            
+            // 验证最终编码的二进制是否包含 mock 数据
+            try {
+                const finalDecoded = WeatherKit2.decode(new flatbuffers.ByteBuffer(rawBody), "all");
+                if (typeof $persistentStore !== "undefined") {
+                    $persistentStore.write(JSON.stringify(finalDecoded), "iRingo.Debug.FinalDecoded");
+                }
+            } catch (decErr) {
+                if (typeof $persistentStore !== "undefined") {
+                    $persistentStore.write("Final decode error: " + decErr.message, "iRingo.Debug.FinalDecoded");
+                }
+            }
             break;
         }
     }
