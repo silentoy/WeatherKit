@@ -178,6 +178,17 @@ function MarkInjectedProvider(data, Settings) {
  */
 async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
     Console.info("☑️ InjectCurrentWeather");
+    if (IsVisibleProviderMarkEnabled(Settings)) {
+        Console.info("☑️ InjectCurrentWeather (MOCK MODE)");
+        if (!currentWeather) currentWeather = {};
+        currentWeather.metadata = {
+            ...currentWeather?.metadata,
+            providerName: "iRingo Mock Current Weather",
+        };
+        MarkInjectedProvider(currentWeather, Settings);
+        Console.info("✅ InjectCurrentWeather (MOCK MODE)");
+        return currentWeather;
+    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectCurrentWeather", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectCurrentWeather");
@@ -215,6 +226,15 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
  */
 async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     Console.info("☑️ InjectForecastDaily");
+    if (IsVisibleProviderMarkEnabled(Settings)) {
+        Console.info("☑️ InjectForecastDaily (MOCK MODE)");
+        if (!forecastDaily) forecastDaily = { days: [] };
+        if (!forecastDaily.metadata) forecastDaily.metadata = {};
+        forecastDaily.metadata.providerName = "iRingo Mock Daily Forecast";
+        MarkInjectedProvider(forecastDaily, Settings);
+        Console.info("✅ InjectForecastDaily (MOCK MODE)");
+        return forecastDaily;
+    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectForecastDaily", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectForecastDaily");
@@ -254,6 +274,15 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
  */
 async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     Console.info("☑️ InjectForecastHourly");
+    if (IsVisibleProviderMarkEnabled(Settings)) {
+        Console.info("☑️ InjectForecastHourly (MOCK MODE)");
+        if (!forecastHourly) forecastHourly = { hours: [] };
+        if (!forecastHourly.metadata) forecastHourly.metadata = {};
+        forecastHourly.metadata.providerName = "iRingo Mock Hourly Forecast";
+        MarkInjectedProvider(forecastHourly, Settings);
+        Console.info("✅ InjectForecastHourly (MOCK MODE)");
+        return forecastHourly;
+    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectForecastHourly", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectForecastHourly");
@@ -293,6 +322,28 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
  */
 async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
     Console.info("☑️ InjectForecastNextHour");
+    if (IsVisibleProviderMarkEnabled(Settings)) {
+        Console.info("☑️ InjectForecastNextHour (MOCK MODE)");
+        forecastNextHour = {
+            metadata: {
+                providerName: "iRingo Mock Next Hour Forecast",
+                sourceType: "MODELED"
+            },
+            minutes: [
+                {
+                    startTime: ((Date.now() / 1000) | 0),
+                    precipitationChance: 50,
+                    precipitationIntensity: 1.0,
+                    perceivedPrecipitationIntensity: 1.0
+                }
+            ],
+            condition: [],
+            summary: []
+        };
+        MarkInjectedProvider(forecastNextHour, Settings);
+        Console.info("✅ InjectForecastNextHour (MOCK MODE)");
+        return forecastNextHour;
+    }
 
     if (forecastNextHour) {
         Console.info("✅ InjectForecastNextHour");
@@ -331,6 +382,23 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
  * @returns {Promise<any>} 合并后的空气质量对象
  */
 async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
+    if (IsVisibleProviderMarkEnabled(Settings)) {
+        Console.info("☑️ InjectAirQuality (MOCK MODE)");
+        airQuality = {
+            ...airQuality,
+            metadata: {
+                ...airQuality?.metadata,
+                providerName: "iRingo Mock Air Quality",
+            },
+            index: 55,
+            categoryIndex: 1,
+            isSignificant: false,
+            scale: "HJ6332012"
+        };
+        MarkInjectedProvider(airQuality, Settings);
+        Console.info("✅ InjectAirQuality (MOCK MODE)");
+        return airQuality;
+    }
     // Step1. 修复污染物单位
     airQuality = AirQuality.FixPollutantsUnits(airQuality);
 
