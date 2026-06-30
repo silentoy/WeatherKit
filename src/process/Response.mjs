@@ -74,6 +74,17 @@ export async function Response($request, $response) {
         case "application/grpc+proto":
         case "application/octet-stream": {
             let rawBody = $response.bodyBytes ? new Uint8Array($response.bodyBytes) : ($response.body ?? new Uint8Array());
+            if (typeof $persistentStore !== "undefined") {
+                try {
+                    var binary = "";
+                    for (var i = 0; i < rawBody.length; i++) {
+                        binary += String.fromCharCode(rawBody[i]);
+                    }
+                    $persistentStore.write(btoa(binary), "iRingo.Debug.OriginalResponse");
+                } catch (storeErr) {
+                    $persistentStore.write("Store err: " + storeErr.message, "iRingo.Debug.OriginalResponse");
+                }
+            }
             switch (FORMAT) {
                 case "application/vnd.apple.flatbuffer": {
                     // 解析FlatBuffer
