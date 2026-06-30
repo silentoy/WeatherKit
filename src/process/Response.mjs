@@ -191,9 +191,21 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
     if (IsVisibleProviderMarkEnabled(Settings)) {
         Console.info("☑️ InjectCurrentWeather (MOCK MODE)");
         if (!currentWeather) currentWeather = {};
-        currentWeather.metadata = {
-            ...currentWeather?.metadata,
-            providerName: "iRingo Mock Current Weather",
+        currentWeather = {
+            ...currentWeather,
+            metadata: {
+                ...currentWeather?.metadata,
+                providerName: "iRingo Mock Current Weather",
+            },
+            temperature: 99.0,
+            temperatureApparent: 99.0,
+            conditionCode: "SNOW",
+            precipitationAmountNext1hByType: currentWeather?.precipitationAmountNext1hByType ?? [],
+            precipitationAmountNext24hByType: currentWeather?.precipitationAmountNext24hByType ?? [],
+            precipitationAmountNext6hByType: currentWeather?.precipitationAmountNext6hByType ?? [],
+            precipitationAmountPrevious1hByType: currentWeather?.precipitationAmountPrevious1hByType ?? [],
+            precipitationAmountPrevious24hByType: currentWeather?.precipitationAmountPrevious24hByType ?? [],
+            precipitationAmountPrevious6hByType: currentWeather?.precipitationAmountPrevious6hByType ?? []
         };
         MarkInjectedProvider(currentWeather, Settings);
         Console.info("✅ InjectCurrentWeather (MOCK MODE)");
@@ -241,6 +253,14 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
         if (!forecastDaily) forecastDaily = { days: [] };
         if (!forecastDaily.metadata) forecastDaily.metadata = {};
         forecastDaily.metadata.providerName = "iRingo Mock Daily Forecast";
+        if (Array.isArray(forecastDaily.days)) {
+            forecastDaily.days = forecastDaily.days.map(day => ({
+                ...day,
+                maxTemperature: 99.0,
+                minTemperature: 99.0,
+                conditionCode: "SNOW"
+            }));
+        }
         MarkInjectedProvider(forecastDaily, Settings);
         Console.info("✅ InjectForecastDaily (MOCK MODE)");
         return forecastDaily;
@@ -289,6 +309,13 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
         if (!forecastHourly) forecastHourly = { hours: [] };
         if (!forecastHourly.metadata) forecastHourly.metadata = {};
         forecastHourly.metadata.providerName = "iRingo Mock Hourly Forecast";
+        if (Array.isArray(forecastHourly.hours)) {
+            forecastHourly.hours = forecastHourly.hours.map(hour => ({
+                ...hour,
+                temperature: 99.0,
+                conditionCode: "SNOW"
+            }));
+        }
         MarkInjectedProvider(forecastHourly, Settings);
         Console.info("✅ InjectForecastHourly (MOCK MODE)");
         return forecastHourly;
