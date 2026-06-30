@@ -160,7 +160,9 @@ export async function Response($request, $response) {
                     break;
             }
             // 写入二进制数据
-            $response.body = rawBody;
+            const modifiedBuffer = rawBody.buffer.slice(rawBody.byteOffset, rawBody.byteLength + rawBody.byteOffset);
+            $response.body = modifiedBuffer;
+            $response.bodyBytes = modifiedBuffer;
             
             // 验证最终编码的二进制是否包含 mock 数据
             try {
