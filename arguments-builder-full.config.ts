@@ -336,7 +336,17 @@ export const logLevel: Arg[] = [
     },
 ];
 
+export const debug: Arg[] = [
+    {
+        key: "Debug.VisibleProviderMark",
+        name: "[调试] 显示写入成功标识",
+        type: "boolean",
+        defaultValue: false,
+        description: "开启后，会在天气 App 可展示的数据来源文案后追加「iRingo写入成功」，用于确认第三方数据已写入。",
+    },
+];
+
 export default defineConfig({
     output,
-    args: [...dataSets, ...weatherFull, ...nextHourFull, ...airQualityFull, ...calculateFull, ...api, ...storage, ...logLevel],
+    args: [...dataSets, ...weatherFull, ...nextHourFull, ...airQualityFull, ...calculateFull, ...api, ...storage, ...logLevel, ...debug],
 });

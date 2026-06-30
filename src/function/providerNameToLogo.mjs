@@ -3,7 +3,8 @@ import { Console } from "@nsnanocat/util";
 export default function providerNameToLogo(providerName, version) {
     Console.info("☑️ providerNameToLogo", `providerName: ${providerName}`, `version: ${version}`);
     let providerLogo;
-    switch (providerName?.split("\n")?.[0]) {
+    const normalizedProviderName = providerName?.split("\n")?.[0]?.replace(/\s*·\s*iRingo写入成功$/, "");
+    switch (normalizedProviderName) {
         case "WAQI":
         case "World Air Quality Index Project":
             switch (version) {

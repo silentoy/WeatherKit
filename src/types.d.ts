@@ -319,6 +319,16 @@ export interface Settings {
             Token?: string;
         };
     };
+    Debug?: {
+        /**
+         * [调试] 显示写入成功标识
+         *
+         * 开启后，会在天气 App 可展示的数据来源文案后追加「iRingo写入成功」，用于确认第三方数据已写入。
+         *
+         * @defaultValue false
+         */
+        VisibleProviderMark?: boolean;
+    };
     /**
      * [储存] 配置类型
      *

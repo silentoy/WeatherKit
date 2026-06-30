@@ -9,6 +9,7 @@ export default {
                 Comparison: { ReplaceWhenCurrentChange: false, Yesterday: { PollutantsProvider: "QWeather", IndexProvider: "ColorfulCloudsUS" } },
                 Calculate: { Algorithm: "EU_EAQI", AllowOverRange: true },
             },
+            Debug: { VisibleProviderMark: false },
             API: { WAQI: { Token: null }, QWeather: { Token: null, Host: "devapi.qweather.com" }, ColorfulClouds: { Token: null } },
         },
         Configs: {

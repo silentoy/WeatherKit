@@ -118,6 +118,7 @@ export async function Response($request, $response) {
                                                     matchEnum.airQuality();
                                                 }
                                                 body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
+                                                MarkInjectedProvider(body.airQuality, Settings);
                                                 break;
                                             }
                                             case "currentWeather": {
@@ -215,6 +216,19 @@ export async function Response($request, $response) {
     return $response;
 }
 
+function IsVisibleProviderMarkEnabled(Settings) {
+    const value = Settings?.Debug?.VisibleProviderMark;
+    return value === true || value === "true" || value === 1 || value === "1";
+}
+
+function MarkInjectedProvider(data, Settings) {
+    if (!IsVisibleProviderMarkEnabled(Settings)) return;
+    if (!data?.metadata?.providerName) return;
+    const mark = "iRingo写入成功";
+    if (data.metadata.providerName.includes(mark)) return;
+    data.metadata.providerName = `${data.metadata.providerName} · ${mark}`;
+}
+
 /**
  * 注入当前天气数据
  * @param {any} currentWeather - 当前天气数据对象
@@ -246,6 +260,7 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
     if (newCurrentWeather?.metadata) {
         newCurrentWeather.metadata = { ...currentWeather?.metadata, ...newCurrentWeather.metadata };
         currentWeather = { ...currentWeather, ...newCurrentWeather };
+        MarkInjectedProvider(currentWeather, Settings);
         //Console.debug(`currentWeather: ${JSON.stringify(currentWeather, null, 2)}`);
     }
     Console.info("✅ InjectCurrentWeather");
@@ -286,6 +301,7 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     if (newForecastDaily?.metadata) {
         forecastDaily.metadata = { ...forecastDaily?.metadata, ...newForecastDaily.metadata };
         Weather.mergeForecast(forecastDaily?.days, newForecastDaily?.days);
+        MarkInjectedProvider(forecastDaily, Settings);
         //Console.debug(`forecastDaily: ${JSON.stringify(forecastDaily, null, 2)}`);
     }
     Console.info("✅ InjectForecastDaily");
@@ -326,6 +342,7 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     if (newForecastHourly?.metadata) {
         forecastHourly.metadata = { ...forecastHourly?.metadata, ...newForecastHourly.metadata };
         forecastHourly.hours = Weather.mergeForecast(forecastHourly?.hours, newForecastHourly?.hours);
+        MarkInjectedProvider(forecastHourly, Settings);
         //Console.debug(`forecastHourly: ${JSON.stringify(forecastHourly, null, 2)}`);
     }
     Console.info("✅ InjectForecastHourly");
@@ -364,6 +381,7 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
     if (newForecastNextHour?.metadata) {
         newForecastNextHour.metadata = { ...forecastNextHour?.metadata, ...newForecastNextHour.metadata };
         forecastNextHour = { ...forecastNextHour, ...newForecastNextHour };
+        MarkInjectedProvider(forecastNextHour, Settings);
         Console.debug(`forecastNextHour: ${JSON.stringify(forecastNextHour, null, 2)}`);
     }
     Console.info("✅ InjectForecastNextHour");
