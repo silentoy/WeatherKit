@@ -1,5 +1,5 @@
 #!name =  iRingo: 🌤 WeatherKit (Rewrite)
-#!desc = iOS 18 & macOS 15 & watchOS 11\n1.解锁全部天气功能\n2.替换空气质量数据\n3.添加下一小时降水数据\n4.添加天气数据
+#!desc = iOS 18+ / macOS 15+ / watchOS 11+，包含 iOS 27 WeatherKit v3 兼容\n1.解锁全部天气功能\n2.替换空气质量数据\n3.添加下一小时降水数据\n4.添加天气数据\n5.兼容 /api/v3/availability 与 /api/v3/weather
 #!openUrl = http://boxjs.com/#/app/iRingo.WeatherKit
 #!author = VirgilClyne[https://github.com/VirgilClyne],WordlessEcho[https://github.com/WordlessEcho],001[https://github.com/001ProMax]
 #!homepage = https://NSRingo.github.io/guide/Weather/weather-kit
@@ -14,15 +14,15 @@ DOMAIN,tether.edge.apple,REJECT-DROP
 AND,((OR,((IP-ASN,714,no-resolve),(IP-ASN,6185,no-resolve))),(PROTOCOL,QUIC)),REJECT-DROP
 
 [URL Rewrite]
-# 🌤 WeatherKit.api.v1.availability.response
+# 🌤 WeatherKit availability v1 -> Worker
 ^https?:\/\/weatherkit\.apple\.com\/api\/v1\/availability\/ https://weatherkit.nanocat.cloud/api/v1/availability/ header
-# 🌤 WeatherKit.api.v2.availability.response
+# 🌤 WeatherKit availability v2 -> Worker
 ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/availability\/ https://weatherkit.nanocat.cloud/api/v2/availability/ header
-# 🌤 WeatherKit.api.v3.availability.response
+# 🌤 WeatherKit availability v3 -> Worker (iOS 27)
 ^https?:\/\/weatherkit\.apple\.com\/api\/v3\/availability\/ https://weatherkit.nanocat.cloud/api/v3/availability/ header
-# 🌤 WeatherKit.api.v2.weather.response
+# 🌤 WeatherKit weather v2 -> Worker
 ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/weather\/ https://weatherkit.nanocat.cloud/api/v2/weather/ header
-# 🌤 WeatherKit.api.v3.weather.response
+# 🌤 WeatherKit weather v3 -> Worker (iOS 27)
 ^https?:\/\/weatherkit\.apple\.com\/api\/v3\/weather\/ https://weatherkit.nanocat.cloud/api/v3/weather/ header
 
 [MITM]
