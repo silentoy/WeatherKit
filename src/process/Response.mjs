@@ -190,7 +190,6 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
     Console.info("☑️ InjectCurrentWeather");
     if (IsVisibleProviderMarkEnabled(Settings)) {
         Console.info("☑️ InjectCurrentWeather (MOCK MODE)");
-        if (!currentWeather) currentWeather = {};
         currentWeather = {
             ...currentWeather,
             metadata: {
@@ -199,13 +198,7 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
             },
             temperature: 99.0,
             temperatureApparent: 99.0,
-            conditionCode: "SNOW",
-            precipitationAmountNext1hByType: currentWeather?.precipitationAmountNext1hByType ?? [],
-            precipitationAmountNext24hByType: currentWeather?.precipitationAmountNext24hByType ?? [],
-            precipitationAmountNext6hByType: currentWeather?.precipitationAmountNext6hByType ?? [],
-            precipitationAmountPrevious1hByType: currentWeather?.precipitationAmountPrevious1hByType ?? [],
-            precipitationAmountPrevious24hByType: currentWeather?.precipitationAmountPrevious24hByType ?? [],
-            precipitationAmountPrevious6hByType: currentWeather?.precipitationAmountPrevious6hByType ?? []
+            conditionCode: "SNOW"
         };
         MarkInjectedProvider(currentWeather, Settings);
         Console.info("✅ InjectCurrentWeather (MOCK MODE)");
@@ -249,20 +242,7 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
 async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     Console.info("☑️ InjectForecastDaily");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastDaily (MOCK MODE)");
-        if (!forecastDaily) forecastDaily = { days: [] };
-        if (!forecastDaily.metadata) forecastDaily.metadata = {};
-        forecastDaily.metadata.providerName = "iRingo Mock Daily Forecast";
-        if (Array.isArray(forecastDaily.days)) {
-            forecastDaily.days = forecastDaily.days.map(day => ({
-                ...day,
-                maxTemperature: 99.0,
-                minTemperature: 99.0,
-                conditionCode: "SNOW"
-            }));
-        }
-        MarkInjectedProvider(forecastDaily, Settings);
-        Console.info("✅ InjectForecastDaily (MOCK MODE)");
+        Console.info("☑️ InjectForecastDaily (MOCK MODE - PASSTHROUGH)");
         return forecastDaily;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
@@ -305,19 +285,7 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
 async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     Console.info("☑️ InjectForecastHourly");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastHourly (MOCK MODE)");
-        if (!forecastHourly) forecastHourly = { hours: [] };
-        if (!forecastHourly.metadata) forecastHourly.metadata = {};
-        forecastHourly.metadata.providerName = "iRingo Mock Hourly Forecast";
-        if (Array.isArray(forecastHourly.hours)) {
-            forecastHourly.hours = forecastHourly.hours.map(hour => ({
-                ...hour,
-                temperature: 99.0,
-                conditionCode: "SNOW"
-            }));
-        }
-        MarkInjectedProvider(forecastHourly, Settings);
-        Console.info("✅ InjectForecastHourly (MOCK MODE)");
+        Console.info("☑️ InjectForecastHourly (MOCK MODE - PASSTHROUGH)");
         return forecastHourly;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
@@ -360,25 +328,7 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
 async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
     Console.info("☑️ InjectForecastNextHour");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastNextHour (MOCK MODE)");
-        forecastNextHour = {
-            metadata: {
-                providerName: "iRingo Mock Next Hour Forecast",
-                sourceType: "MODELED"
-            },
-            minutes: [
-                {
-                    startTime: ((Date.now() / 1000) | 0),
-                    precipitationChance: 50,
-                    precipitationIntensity: 1.0,
-                    perceivedPrecipitationIntensity: 1.0
-                }
-            ],
-            condition: [],
-            summary: []
-        };
-        MarkInjectedProvider(forecastNextHour, Settings);
-        Console.info("✅ InjectForecastNextHour (MOCK MODE)");
+        Console.info("☑️ InjectForecastNextHour (MOCK MODE - PASSTHROUGH)");
         return forecastNextHour;
     }
 
@@ -420,21 +370,7 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
  */
 async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectAirQuality (MOCK MODE)");
-        airQuality = {
-            ...airQuality,
-            metadata: {
-                ...airQuality?.metadata,
-                providerName: "iRingo Mock Air Quality",
-            },
-            index: 55,
-            categoryIndex: 1,
-            isSignificant: false,
-            scale: "HJ6332012",
-            pollutants: airQuality?.pollutants ?? []
-        };
-        MarkInjectedProvider(airQuality, Settings);
-        Console.info("✅ InjectAirQuality (MOCK MODE)");
+        Console.info("☑️ InjectAirQuality (MOCK MODE - PASSTHROUGH)");
         return airQuality;
     }
     // Step1. 修复污染物单位
