@@ -69,7 +69,7 @@ export async function Response($request, $response) {
             switch (url.hostname) {
                 case "weatherkit.apple.com":
                     // 路径判断
-                    if (url.pathname.startsWith("/api/v1/availability/")) {
+                    if (url.pathname.startsWith("/api/v1/availability/") || url.pathname.startsWith("/api/v2/availability/") || url.pathname.startsWith("/api/v3/availability/")) {
                         Console.debug(`body: ${JSON.stringify(body)}`);
                         body = Configs?.Availability?.v2;
                     }
@@ -96,7 +96,7 @@ export async function Response($request, $response) {
                     switch (url.hostname) {
                         case "weatherkit.apple.com":
                             // 路径判断
-                            if (url.pathname.startsWith("/api/v2/weather/")) {
+                            if (url.pathname.startsWith("/api/v2/weather/") || url.pathname.startsWith("/api/v3/weather/")) {
                                 body = WeatherKit2.decode(ByteBuffer, "all");
                                 const matchEnum = new MatchEnum(body);
                                 if (Settings?.LogLevel === "DEBUG" || Settings?.LogLevel === "ALL") {

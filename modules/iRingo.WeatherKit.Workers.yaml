@@ -31,8 +31,17 @@ url_rewrites:
 - match: ^https?:\/\/weatherkit\.apple\.com\/api\/v1\/availability\/
   location: https://weatherkit.nanocat.cloud/api/v1/availability/
   status_code: 307
+- match: ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/availability\/
+  location: https://weatherkit.nanocat.cloud/api/v2/availability/
+  status_code: 307
+- match: ^https?:\/\/weatherkit\.apple\.com\/api\/v3\/availability\/
+  location: https://weatherkit.nanocat.cloud/api/v3/availability/
+  status_code: 307
 - match: ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/weather\/
   location: https://weatherkit.nanocat.cloud/api/v2/weather/
+  status_code: 307
+- match: ^https?:\/\/weatherkit\.apple\.com\/api\/v3\/weather\/
+  location: https://weatherkit.nanocat.cloud/api/v3/weather/
   status_code: 307
 mitm:
   hostnames:

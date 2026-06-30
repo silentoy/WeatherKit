@@ -16,8 +16,14 @@ AND,((OR,((IP-ASN,714,no-resolve),(IP-ASN,6185,no-resolve))),(PROTOCOL,QUIC)),RE
 [URL Rewrite]
 # 🌤 WeatherKit.api.v1.availability.response
 ^https?:\/\/weatherkit\.apple\.com\/api\/v1\/availability\/ https://weatherkit.nanocat.cloud/api/v1/availability/ header
+# 🌤 WeatherKit.api.v2.availability.response
+^https?:\/\/weatherkit\.apple\.com\/api\/v2\/availability\/ https://weatherkit.nanocat.cloud/api/v2/availability/ header
+# 🌤 WeatherKit.api.v3.availability.response
+^https?:\/\/weatherkit\.apple\.com\/api\/v3\/availability\/ https://weatherkit.nanocat.cloud/api/v3/availability/ header
 # 🌤 WeatherKit.api.v2.weather.response
 ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/weather\/ https://weatherkit.nanocat.cloud/api/v2/weather/ header
+# 🌤 WeatherKit.api.v3.weather.response
+^https?:\/\/weatherkit\.apple\.com\/api\/v3\/weather\/ https://weatherkit.nanocat.cloud/api/v3/weather/ header
 
 [MITM]
 hostname = %APPEND% weatherkit.apple.com
