@@ -272,22 +272,22 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
                 const newDay = {
                     ...day,
                     temperatureMax: 45.0,
-                    temperatureMin: 45.0,
+                    temperatureMin: 40.0,
                     conditionCode: "RAIN"
                 };
                 if (newDay.daytimeForecast) {
                     newDay.daytimeForecast = {
                         ...newDay.daytimeForecast,
                         temperatureMax: 45.0,
-                        temperatureMin: 45.0,
+                        temperatureMin: 40.0,
                         conditionCode: "RAIN"
                     };
                 }
                 if (newDay.overnightForecast) {
                     newDay.overnightForecast = {
                         ...newDay.overnightForecast,
-                        temperatureMax: 45.0,
-                        temperatureMin: 45.0,
+                        temperatureMax: 43.0,
+                        temperatureMin: 40.0,
                         conditionCode: "RAIN"
                     };
                 }
@@ -295,7 +295,7 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
                     newDay.restOfDayForecast = {
                         ...newDay.restOfDayForecast,
                         temperatureMax: 45.0,
-                        temperatureMin: 45.0,
+                        temperatureMin: 40.0,
                         conditionCode: "RAIN"
                     };
                 }
