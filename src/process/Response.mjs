@@ -156,6 +156,10 @@ export async function Response($request, $response) {
     if ($response.headers) {
         delete $response.headers["Content-Length"];
         delete $response.headers["content-length"];
+        delete $response.headers["Content-Encoding"];
+        delete $response.headers["content-encoding"];
+        delete $response.headers["Transfer-Encoding"];
+        delete $response.headers["transfer-encoding"];
     }
     return $response;
     } catch (e) {
