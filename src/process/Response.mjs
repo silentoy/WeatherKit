@@ -96,22 +96,31 @@ export async function Response($request, $response) {
                                 await Promise.all(
                                     parameters.dataSets.map(async dataSet => {
                                         switch (dataSet) {
-                                            case "airQuality":
-                                                // body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
+                                            case "airQuality": {
+                                                body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
+                                                MarkInjectedProvider(body.airQuality, Settings);
                                                 break;
-                                            case "currentWeather":
-                                                // body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
+                                            }
+                                            case "currentWeather": {
+                                                body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
+                                                if (body?.currentWeather?.metadata?.providerName && !body?.currentWeather?.metadata?.providerLogo) body.currentWeather.metadata.providerLogo = providerNameToLogo(body?.currentWeather?.metadata?.providerName, "v2");
                                                 break;
-                                            case "forecastDaily":
-                                                // body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
+                                            }
+                                            case "forecastDaily": {
+                                                body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
+                                                if (body?.forecastDaily?.metadata?.providerName && !body?.forecastDaily?.metadata?.providerLogo) body.forecastDaily.metadata.providerLogo = providerNameToLogo(body?.forecastDaily?.metadata?.providerName, "v2");
                                                 break;
-                                            case "forecastHourly":
-                                                // body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
+                                            }
+                                            case "forecastHourly": {
+                                                body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
+                                                if (body?.forecastHourly?.metadata?.providerName && !body?.forecastHourly?.metadata?.providerLogo) body.forecastHourly.metadata.providerLogo = providerNameToLogo(body?.forecastHourly?.metadata?.providerName, "v2");
                                                 break;
-                                            case "forecastNextHour":
-                                                // body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
-                                                // if (body?.forecastNextHour?.metadata?.providerName && !body?.forecastNextHour?.metadata?.providerLogo) body.forecastNextHour.metadata.providerLogo = providerNameToLogo(body?.forecastNextHour?.metadata?.providerName, "v2");
+                                            }
+                                            case "forecastNextHour": {
+                                                body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
+                                                if (body?.forecastNextHour?.metadata?.providerName && !body?.forecastNextHour?.metadata?.providerLogo) body.forecastNextHour.metadata.providerLogo = providerNameToLogo(body?.forecastNextHour?.metadata?.providerName, "v2");
                                                 break;
+                                            }
                                             default:
                                                 break;
                                         }
@@ -237,7 +246,42 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
 async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     Console.info("☑️ InjectForecastDaily");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastDaily (MOCK MODE - PASSTHROUGH)");
+        Console.info("☑️ InjectForecastDaily (MOCK MODE)");
+        if (forecastDaily && Array.isArray(forecastDaily.days)) {
+            forecastDaily.days = forecastDaily.days.map(day => {
+                const newDay = {
+                    ...day,
+                    temperatureMax: 99.0,
+                    temperatureMin: 99.0,
+                    conditionCode: "SNOW"
+                };
+                if (newDay.daytimeForecast) {
+                    newDay.daytimeForecast = {
+                        ...newDay.daytimeForecast,
+                        temperatureMax: 99.0,
+                        temperatureMin: 99.0,
+                        conditionCode: "SNOW"
+                    };
+                }
+                if (newDay.overnightForecast) {
+                    newDay.overnightForecast = {
+                        ...newDay.overnightForecast,
+                        temperatureMax: 99.0,
+                        temperatureMin: 99.0,
+                        conditionCode: "SNOW"
+                    };
+                }
+                if (newDay.restOfDayForecast) {
+                    newDay.restOfDayForecast = {
+                        ...newDay.restOfDayForecast,
+                        temperatureMax: 99.0,
+                        temperatureMin: 99.0,
+                        conditionCode: "SNOW"
+                    };
+                }
+                return newDay;
+            });
+        }
         return forecastDaily;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
@@ -280,7 +324,14 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
 async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     Console.info("☑️ InjectForecastHourly");
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastHourly (MOCK MODE - PASSTHROUGH)");
+        Console.info("☑️ InjectForecastHourly (MOCK MODE)");
+        if (forecastHourly && Array.isArray(forecastHourly.hours)) {
+            forecastHourly.hours = forecastHourly.hours.map(hour => ({
+                ...hour,
+                temperature: 99.0,
+                conditionCode: "SNOW"
+            }));
+        }
         return forecastHourly;
     }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
@@ -365,7 +416,18 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
  */
 async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
     if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectAirQuality (MOCK MODE - PASSTHROUGH)");
+        Console.info("☑️ InjectAirQuality (MOCK MODE)");
+        airQuality = {
+            ...airQuality,
+            metadata: {
+                ...airQuality?.metadata,
+                providerName: "iRingo Mock Air Quality",
+            },
+            index: 999,
+            categoryIndex: 6,
+            isSignificant: true,
+            scale: "HJ6332012",
+        };
         return airQuality;
     }
     // Step1. 修复污染物单位
