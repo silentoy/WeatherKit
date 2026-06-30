@@ -220,10 +220,6 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
         Console.info("☑️ InjectCurrentWeather (MOCK MODE)");
         currentWeather = {
             ...currentWeather,
-            metadata: {
-                ...currentWeather?.metadata,
-                providerName: "iRingo Mock Current Weather",
-            },
             temperature: 45.0,
             temperatureApparent: 45.0,
             conditionCode: "RAIN"
