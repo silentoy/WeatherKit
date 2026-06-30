@@ -213,6 +213,10 @@ export async function Response($request, $response) {
             break;
         }
     }
+    if ($response.headers) {
+        delete $response.headers["Content-Length"];
+        delete $response.headers["content-length"];
+    }
     return $response;
 }
 
