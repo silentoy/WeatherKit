@@ -12,8 +12,9 @@ import Weather from "../class/Weather.mjs";
 import AirQuality from "../class/AirQuality.mjs";
 /***************** Processing *****************/
 export async function Response($request, $response) {
-    // 解构URL
-    const url = new URL($request.url);
+    try {
+        // 解构URL
+        const url = new URL($request.url);
     Console.info(`url: ${url.toJSON()}`);
     // 获取连接参数
     const PATHs = url.pathname.split("/").filter(Boolean);
@@ -154,6 +155,12 @@ export async function Response($request, $response) {
         delete $response.headers["content-length"];
     }
     return $response;
+    } catch (e) {
+        if (typeof $persistentStore !== "undefined") {
+            $persistentStore.write(JSON.stringify({ message: e.message, stack: e.stack }), "iRingo.Error");
+        }
+        throw e;
+    }
 }
 
 function IsVisibleProviderMarkEnabled(Settings) {
@@ -393,7 +400,8 @@ async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
             index: 55,
             categoryIndex: 1,
             isSignificant: false,
-            scale: "HJ6332012"
+            scale: "HJ6332012",
+            pollutants: airQuality?.pollutants ?? []
         };
         MarkInjectedProvider(airQuality, Settings);
         Console.info("✅ InjectAirQuality (MOCK MODE)");
