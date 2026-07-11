@@ -8,8 +8,11 @@ for (const name of modules) {
     test(`${name} publishes cache-busted fork bundles`, async () => {
         const source = await readFile(new URL(`../modules/${name}`, import.meta.url), "utf8");
         const version = source.match(/^#!version = (.+)$/m)?.[1];
+        assert.equal(version, "4.3.1-ios27.2");
         assert.match(version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
         assert.match(source, /^#!modified = 2026-07-11 \d{2}:\d{2}:\d{2} \+08:00$/m);
+        assert.match(source, /^#!arguments = .*Debug\.FixedTemperature:2$/m);
+        assert.match(source, /Debug\.FixedTemperature="\{\{\{Debug\.FixedTemperature\}\}\}"/);
         assert.match(source, /api\.v2\.weather\.request = type=http-request/);
         assert.match(source, /api\.v3\.weather\.request = type=http-request/);
         assert.match(source, new RegExp(`https://raw\\.githubusercontent\\.com/silentoy/WeatherKit/main/dist/request\\.bundle\\.js\\?v=${version.replaceAll(".", "\\.")}`));

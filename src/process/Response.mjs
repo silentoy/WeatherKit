@@ -124,6 +124,14 @@ export async function Response($request, $response) {
                         }),
                     );
 
+                    const fixedTemperatureValue = Settings?.Debug?.FixedTemperature;
+                    const fixedTemperature = Number(fixedTemperatureValue);
+                    if (dataSets.includes("currentWeather") && body.currentWeather && fixedTemperatureValue != null && fixedTemperatureValue !== "" && Number.isFinite(fixedTemperature)) {
+                        body.currentWeather.temperature = fixedTemperature;
+                        body.currentWeather.temperatureApparent = fixedTemperature;
+                        if (!injected.includes("currentWeather")) injected.push("currentWeather");
+                    }
+
                     let applied = [];
                     let writes = 0;
                     if (parameters.version === "v3") {

@@ -67,3 +67,35 @@ test("v3 response falls back to body datasets, isolates failures, and preserves 
     assert.equal(result.country, "CN");
     assert.equal(result.version, "v3");
 });
+
+test("v3 fixed temperature changes only current values", async () => {
+    const bytes = new Uint8Array(Buffer.from((await readFile(fixture, "utf8")).trim(), "base64"));
+    const before = decode(bytes);
+    const diagnostics = new Map();
+    globalThis.$argument = {
+        Storage: "Argument",
+        LogLevel: "OFF",
+        Weather: { Provider: "WeatherKit", Replace: ["CN"] },
+        NextHour: { Provider: "WeatherKit" },
+        Debug: { FixedTemperature: 2 },
+    };
+    globalThis.$persistentStore = {
+        read: () => null,
+        write: (value, key) => (diagnostics.set(key, value), true),
+    };
+
+    const response = await Response(
+        { url: "https://weatherkit.apple.com/api/v3/weather/zh-Hans-CN/49.26/-123.11", headers: {} },
+        { headers: { "Content-Type": "application/vnd.apple.flatbuffer;messageType=WK2.Weather" }, bodyBytes: bytes },
+    );
+    const after = decode(response.body ?? new Uint8Array(response.bodyBytes));
+    const result = JSON.parse(diagnostics.get("iRingo.WeatherKit.Diagnostics"));
+
+    assert.equal(after.currentWeather.temperature, 2);
+    assert.equal(after.currentWeather.temperatureApparent, 2);
+    assert.equal(after.forecastDaily.days[0].temperatureMax, before.forecastDaily.days[0].temperatureMax);
+    assert.equal(after.forecastHourly.hours[0].temperature, before.forecastHourly.hours[0].temperature);
+    assert.deepEqual(after.currentWeather.metadata, before.currentWeather.metadata);
+    assert.equal((response.body ?? response.bodyBytes).length, bytes.length);
+    assert.deepEqual(result.injected, ["currentWeather"]);
+});
