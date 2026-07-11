@@ -3,6 +3,7 @@ import database from "../function/database.mjs";
 import setENV from "../function/setENV.mjs";
 import * as flatbuffers from "flatbuffers";
 import WeatherKit2 from "../class/WeatherKit2.mjs";
+import WeatherKit2Patcher from "../class/WeatherKit2Patcher.mjs";
 import parseWeatherKitURL from "../function/parseWeatherKitURL.mjs";
 import providerNameToLogo from "../function/providerNameToLogo.mjs";
 import ColorfulClouds from "../class/ColorfulClouds.mjs";
@@ -74,79 +75,77 @@ export async function Response($request, $response) {
         case "application/grpc+proto":
         case "application/octet-stream": {
             let rawBody = $response.bodyBytes ? new Uint8Array($response.bodyBytes) : ($response.body ?? new Uint8Array());
-            if (typeof $persistentStore !== "undefined") {
-                try {
-                    var binary = "";
-                    for (var i = 0; i < rawBody.length; i++) {
-                        binary += String.fromCharCode(rawBody[i]);
-                    }
-                    $persistentStore.write(btoa(binary), "iRingo.Debug.OriginalResponse");
-                } catch (storeErr) {
-                    $persistentStore.write("Store err: " + storeErr.message, "iRingo.Debug.OriginalResponse");
-                }
-            }
+            let modified = false;
             switch (FORMAT) {
                 case "application/vnd.apple.flatbuffer": {
-                    // 解析FlatBuffer
-                    const ByteBuffer = new flatbuffers.ByteBuffer(rawBody);
-                    const Builder = new flatbuffers.Builder();
-                    // 主机判断
-                    switch (url.hostname) {
-                        case "weatherkit.apple.com":
-                            // 路径判断
-                            if (url.pathname.startsWith("/api/v2/weather/") || url.pathname.startsWith("/api/v3/weather/")) {
-                                body = WeatherKit2.decode(ByteBuffer, "all");
-                                const parameters = parseWeatherKitURL(url);
-                                const enviroments = {
-                                    colorfulClouds: new ColorfulClouds(parameters, Settings?.API?.ColorfulClouds?.Token || "Y2FpeXVuX25vdGlmeQ=="),
-                                    qWeather: new QWeather(parameters, Settings?.API?.QWeather?.Token, Settings?.API?.QWeather?.Host),
-                                    waqi: new WAQI(parameters, Settings?.API?.WAQI?.Token),
-                                    country: parameters.country,
-                                };
+                    if (url.hostname !== "weatherkit.apple.com" || !(url.pathname.startsWith("/api/v2/weather/") || url.pathname.startsWith("/api/v3/weather/"))) break;
 
-                                await Promise.all(
-                                    parameters.dataSets.map(async dataSet => {
-                                        switch (dataSet) {
-                                            case "airQuality": {
-                                                body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
-                                                MarkInjectedProvider(body.airQuality, Settings);
-                                                break;
-                                            }
-                                            case "currentWeather": {
-                                                body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
-                                                if (body?.currentWeather?.metadata?.providerName && !body?.currentWeather?.metadata?.providerLogo) body.currentWeather.metadata.providerLogo = providerNameToLogo(body?.currentWeather?.metadata?.providerName, "v2");
-                                                break;
-                                            }
-                                            case "forecastDaily": {
-                                                body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
-                                                if (body?.forecastDaily?.metadata?.providerName && !body?.forecastDaily?.metadata?.providerLogo) body.forecastDaily.metadata.providerLogo = providerNameToLogo(body?.forecastDaily?.metadata?.providerName, "v2");
-                                                break;
-                                            }
-                                            case "forecastHourly": {
-                                                body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
-                                                if (body?.forecastHourly?.metadata?.providerName && !body?.forecastHourly?.metadata?.providerLogo) body.forecastHourly.metadata.providerLogo = providerNameToLogo(body?.forecastHourly?.metadata?.providerName, "v2");
-                                                break;
-                                            }
-                                            case "forecastNextHour": {
-                                                body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
-                                                if (body?.forecastNextHour?.metadata?.providerName && !body?.forecastNextHour?.metadata?.providerLogo) body.forecastNextHour.metadata.providerLogo = providerNameToLogo(body?.forecastNextHour?.metadata?.providerName, "v2");
-                                                break;
-                                            }
-                                            default:
-                                                break;
-                                        }
-                                    }),
-                                );
-                                if (typeof $persistentStore !== "undefined") {
-                                    $persistentStore.write(JSON.stringify(body), "iRingo.Debug.Decoded");
+                    body = WeatherKit2.decode(new flatbuffers.ByteBuffer(rawBody), "all");
+                    const parameters = parseWeatherKitURL(url);
+                    const supported = ["airQuality", "currentWeather", "forecastDaily", "forecastHourly", "forecastNextHour"];
+                    const explicit = parameters.dataSets.filter(dataSet => supported.includes(dataSet));
+                    const dataSets = explicit.length ? explicit : supported.filter(dataSet => body?.[dataSet]);
+                    const country = parameters.country ?? body?.locationInfo?.countryCode ?? parameters.region;
+                    parameters.country = country;
+                    const enviroments = {
+                        colorfulClouds: new ColorfulClouds(parameters, Settings?.API?.ColorfulClouds?.Token || "Y2FpeXVuX25vdGlmeQ=="),
+                        qWeather: new QWeather(parameters, Settings?.API?.QWeather?.Token, Settings?.API?.QWeather?.Host),
+                        waqi: new WAQI(parameters, Settings?.API?.WAQI?.Token),
+                        country,
+                    };
+                    const injected = [];
+                    const errors = {};
+
+                    await Promise.all(
+                        dataSets.map(async dataSet => {
+                            const before = JSON.stringify(body[dataSet]);
+                            try {
+                                switch (dataSet) {
+                                    case "airQuality":
+                                        body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
+                                        break;
+                                    case "currentWeather":
+                                        body.currentWeather = await InjectCurrentWeather(body.currentWeather, Settings, enviroments);
+                                        break;
+                                    case "forecastDaily":
+                                        body.forecastDaily = await InjectForecastDaily(body.forecastDaily, Settings, enviroments);
+                                        break;
+                                    case "forecastHourly":
+                                        body.forecastHourly = await InjectForecastHourly(body.forecastHourly, Settings, enviroments);
+                                        break;
+                                    case "forecastNextHour":
+                                        body.forecastNextHour = await InjectForecastNextHour(body.forecastNextHour, Settings, enviroments);
+                                        break;
                                 }
-                                const WeatherData = WeatherKit2.encode(Builder, "all", body);
-                                Builder.finish(WeatherData);
-                                break;
+                                if (JSON.stringify(body[dataSet]) !== before) injected.push(dataSet);
+                            } catch (error) {
+                                errors[dataSet] = error?.message ?? String(error);
                             }
-                            break;
+                        }),
+                    );
+
+                    let applied = [];
+                    let writes = 0;
+                    if (parameters.version === "v3") {
+                        const patchable = injected.filter(dataSet => ["currentWeather", "forecastDaily", "forecastHourly"].includes(dataSet));
+                        const result = WeatherKit2Patcher.patch(rawBody, body, patchable);
+                        rawBody = result.bytes;
+                        writes = result.writes;
+                        if (writes) applied = patchable;
+                        if (!writes && injected.length === 1 && injected[0] === "forecastNextHour") {
+                            rawBody = EncodeWeather(body);
+                            applied = ["forecastNextHour"];
+                        }
+                    } else if (injected.length) {
+                        rawBody = EncodeWeather(body);
+                        applied = injected;
                     }
-                    rawBody = Builder.asUint8Array(); // Of type `Uint8Array`.
+                    modified = applied.length > 0;
+
+                    const diagnostics = { version: parameters.version, mime: FORMAT, country, dataSets, injected: applied, errors, writes };
+                    $response.headers ??= {};
+                    $response.headers["X-iRingo-WeatherKit"] = `${parameters.version}; country=${country ?? "-"}; injected=${applied.join(",") || "none"}; errors=${Object.keys(errors).join(",") || "none"}`;
+                    if (typeof $persistentStore !== "undefined") $persistentStore.write(JSON.stringify(diagnostics), "iRingo.WeatherKit.Diagnostics");
                     break;
                 }
                 case "application/protobuf":
@@ -159,52 +158,35 @@ export async function Response($request, $response) {
                 case "application/octet-stream":
                     break;
             }
-            // 写入二进制数据
-            delete $response.bodyBytes;
-            $response.body = rawBody;
-            
-            // 验证最终编码的二进制是否包含 mock 数据
-            try {
-                const finalDecoded = WeatherKit2.decode(new flatbuffers.ByteBuffer(rawBody), "all");
-                if (typeof $persistentStore !== "undefined") {
-                    $persistentStore.write(JSON.stringify(finalDecoded), "iRingo.Debug.FinalDecoded");
-                }
-            } catch (decErr) {
-                if (typeof $persistentStore !== "undefined") {
-                    $persistentStore.write("Final decode error: " + decErr.message, "iRingo.Debug.FinalDecoded");
-                }
+            if (modified) {
+                WeatherKit2.decode(new flatbuffers.ByteBuffer(rawBody), "all");
+                delete $response.bodyBytes;
+                $response.body = rawBody;
+                DeleteBodyHeaders($response.headers);
             }
             break;
         }
-    }
-    if ($response.headers) {
-        delete $response.headers["Content-Length"];
-        delete $response.headers["content-length"];
-        delete $response.headers["Content-Encoding"];
-        delete $response.headers["content-encoding"];
-        delete $response.headers["Transfer-Encoding"];
-        delete $response.headers["transfer-encoding"];
     }
     return $response;
     } catch (e) {
         if (typeof $persistentStore !== "undefined") {
             $persistentStore.write(JSON.stringify({ message: e.message, stack: e.stack }), "iRingo.Error");
         }
-        throw e;
+        return $response;
     }
 }
 
-function IsVisibleProviderMarkEnabled(Settings) {
-    const value = Settings?.Debug?.VisibleProviderMark;
-    return value === true || value === "true" || value === 1 || value === "1";
+function EncodeWeather(body) {
+    const builder = new flatbuffers.Builder();
+    const weather = WeatherKit2.encode(builder, "all", body);
+    builder.finish(weather);
+    const bytes = builder.asUint8Array();
+    WeatherKit2.decode(new flatbuffers.ByteBuffer(bytes), "all");
+    return bytes;
 }
 
-function MarkInjectedProvider(data, Settings) {
-    if (!IsVisibleProviderMarkEnabled(Settings)) return;
-    if (!data?.metadata?.providerName) return;
-    const mark = "iRingo写入成功";
-    if (data.metadata.providerName.includes(mark)) return;
-    data.metadata.providerName = `${data.metadata.providerName} · ${mark}`;
+function DeleteBodyHeaders(headers = {}) {
+    for (const name of ["Content-Length", "content-length", "Content-Encoding", "content-encoding", "Transfer-Encoding", "transfer-encoding"]) delete headers[name];
 }
 
 /**
@@ -216,18 +198,6 @@ function MarkInjectedProvider(data, Settings) {
  */
 async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
     Console.info("☑️ InjectCurrentWeather");
-    if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectCurrentWeather (MOCK MODE)");
-        currentWeather = {
-            ...currentWeather,
-            temperature: 45.0,
-            temperatureApparent: 45.0,
-            conditionCode: "RAIN"
-        };
-        MarkInjectedProvider(currentWeather, Settings);
-        Console.info("✅ InjectCurrentWeather (MOCK MODE)");
-        return currentWeather;
-    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectCurrentWeather", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectCurrentWeather");
@@ -248,9 +218,8 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
         }
     }
     if (newCurrentWeather?.metadata) {
-        newCurrentWeather.metadata = { ...currentWeather?.metadata, ...newCurrentWeather.metadata };
-        currentWeather = { ...currentWeather, ...newCurrentWeather };
-        MarkInjectedProvider(currentWeather, Settings);
+        const metadata = currentWeather?.metadata ?? newCurrentWeather.metadata;
+        currentWeather = { ...currentWeather, ...newCurrentWeather, metadata };
     }
     Console.info("✅ InjectCurrentWeather");
     return currentWeather;
@@ -265,45 +234,6 @@ async function InjectCurrentWeather(currentWeather, Settings, enviroments) {
  */
 async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
     Console.info("☑️ InjectForecastDaily");
-    if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastDaily (MOCK MODE)");
-        if (forecastDaily && Array.isArray(forecastDaily.days)) {
-            forecastDaily.days = forecastDaily.days.map(day => {
-                const newDay = {
-                    ...day,
-                    temperatureMax: 45.0,
-                    temperatureMin: 40.0,
-                    conditionCode: "RAIN"
-                };
-                if (newDay.daytimeForecast) {
-                    newDay.daytimeForecast = {
-                        ...newDay.daytimeForecast,
-                        temperatureMax: 45.0,
-                        temperatureMin: 40.0,
-                        conditionCode: "RAIN"
-                    };
-                }
-                if (newDay.overnightForecast) {
-                    newDay.overnightForecast = {
-                        ...newDay.overnightForecast,
-                        temperatureMax: 43.0,
-                        temperatureMin: 40.0,
-                        conditionCode: "RAIN"
-                    };
-                }
-                if (newDay.restOfDayForecast) {
-                    newDay.restOfDayForecast = {
-                        ...newDay.restOfDayForecast,
-                        temperatureMax: 45.0,
-                        temperatureMin: 40.0,
-                        conditionCode: "RAIN"
-                    };
-                }
-                return newDay;
-            });
-        }
-        return forecastDaily;
-    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectForecastDaily", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectForecastDaily");
@@ -326,9 +256,8 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
         }
     }
     if (newForecastDaily?.metadata) {
-        forecastDaily.metadata = { ...forecastDaily?.metadata, ...newForecastDaily.metadata };
+        forecastDaily.metadata ??= newForecastDaily.metadata;
         Weather.mergeForecast(forecastDaily?.days, newForecastDaily?.days);
-        MarkInjectedProvider(forecastDaily, Settings);
     }
     Console.info("✅ InjectForecastDaily");
     return forecastDaily;
@@ -343,17 +272,6 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
  */
 async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
     Console.info("☑️ InjectForecastHourly");
-    if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastHourly (MOCK MODE)");
-        if (forecastHourly && Array.isArray(forecastHourly.hours)) {
-            forecastHourly.hours = forecastHourly.hours.map(hour => ({
-                ...hour,
-                temperature: 45.0,
-                conditionCode: "RAIN"
-            }));
-        }
-        return forecastHourly;
-    }
     if (!Settings?.Weather?.Replace?.includes(enviroments.country)) {
         Console.warn("InjectForecastHourly", `Unreplaced country: ${enviroments.country}`);
         Console.info("✅ InjectForecastHourly");
@@ -376,9 +294,8 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
         }
     }
     if (newForecastHourly?.metadata) {
-        forecastHourly.metadata = { ...forecastHourly?.metadata, ...newForecastHourly.metadata };
+        forecastHourly.metadata ??= newForecastHourly.metadata;
         forecastHourly.hours = Weather.mergeForecast(forecastHourly?.hours, newForecastHourly?.hours);
-        MarkInjectedProvider(forecastHourly, Settings);
     }
     Console.info("✅ InjectForecastHourly");
     return forecastHourly;
@@ -393,11 +310,6 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
  */
 async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
     Console.info("☑️ InjectForecastNextHour");
-    if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectForecastNextHour (MOCK MODE - PASSTHROUGH)");
-        return forecastNextHour;
-    }
-
     if (forecastNextHour) {
         Console.info("✅ InjectForecastNextHour");
         return forecastNextHour;
@@ -420,7 +332,6 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
     if (newForecastNextHour?.metadata) {
         newForecastNextHour.metadata = { ...forecastNextHour?.metadata, ...newForecastNextHour.metadata };
         forecastNextHour = { ...forecastNextHour, ...newForecastNextHour };
-        MarkInjectedProvider(forecastNextHour, Settings);
     }
     Console.info("✅ InjectForecastNextHour");
     return forecastNextHour;
@@ -435,10 +346,6 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
  * @returns {Promise<any>} 合并后的空气质量对象
  */
 async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
-    if (IsVisibleProviderMarkEnabled(Settings)) {
-        Console.info("☑️ InjectAirQuality (MOCK MODE - PASSTHROUGH)");
-        return airQuality;
-    }
     // Step1. 修复污染物单位
     airQuality = AirQuality.FixPollutantsUnits(airQuality);
 

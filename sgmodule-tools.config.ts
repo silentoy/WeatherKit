@@ -11,6 +11,22 @@ export default defineConfig({
         rule: ["DOMAIN,weather-analytics-events.apple.com,REJECT-DROP"],
         script: [
             {
+                name: "🌤 WeatherKit.api.v2.weather.request",
+                type: "http-request",
+                scriptPath: "./dist/request.js",
+                pattern: "^https?://weatherkit.apple.com/api/v2/weather/",
+                engine: "webview",
+                argument: scriptParams,
+            },
+            {
+                name: "🌤 WeatherKit.api.v3.weather.request",
+                type: "http-request",
+                scriptPath: "./dist/request.js",
+                pattern: "^https?://weatherkit.apple.com/api/v3/weather/",
+                engine: "webview",
+                argument: scriptParams,
+            },
+            {
                 name: "🌤 WeatherKit.api.v1.availability.response",
                 type: "http-response",
                 scriptPath: "./dist/response.js",

@@ -20,7 +20,7 @@ export default defineConfig({
             //additionalAliases: ['console'],
         }),
         new rspack.BannerPlugin({
-            banner: `console.log('Date: ${new Date().toLocaleString("zh-CN", { timeZone: "PRC" })}');`,
+            banner: `console.log('Modified: ${new Date().toLocaleString("sv-SE", { timeZone: "Asia/Shanghai" })} +08:00');`,
             raw: true,
         }),
         new rspack.BannerPlugin({

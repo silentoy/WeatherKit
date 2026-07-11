@@ -100,11 +100,6 @@ export async function Request($request) {
                                     }
                                     break;
                             }
-                            let dataSets = url.searchParams.get("dataSets")?.split(",");
-                            if (dataSets) {
-                                dataSets = dataSets?.filter(dataSet => Settings.DataSets?.includes(dataSet));
-                                url.searchParams.set("dataSets", dataSets?.join(","));
-                            }
                             break;
                         }
                     }
